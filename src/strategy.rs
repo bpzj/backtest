@@ -1,9 +1,10 @@
 use crate::account::Account;
 use crate::model::{Assets, KLine, Order, Position, Transaction};
+use chrono::{TimeZone, Utc, Duration, DateTime};
 
 /// 一个低位区间做T策略
 pub struct KStrategy {
-    // 账户状态
+    // 初始持仓
     base_position: i32,
     
     // 策略参数
@@ -13,25 +14,35 @@ pub struct KStrategy {
     base_volume: i32,
     /// 低价做 T 的价格区间
     entry_range: [f64; 2],
+    
     /// 回调买入百分比
-    stop_loss_pct: f64,
-    /// 止盈卖出
-    profit_threshold: f64,
+    t_stop_loss_pct: f64,
+    /// 初始时，做T区间 止盈 stop_profit
+    init_t_stop_profit:f64,
+    /// 做T区间 止盈 stop_profit
+    t_stop_profit: f64,
+    
+    /// 清仓价格，达到清仓价格时清仓
+    liquidation_price: f64,
+    /// 清仓百分比，达到清仓百分比时清仓
+    
     /// 上一个 k线时间
     last_bar_time: i64,
     
 }
 
 impl KStrategy {
-    pub fn new() -> Self {
+    pub fn new(entry_range: [f64; 2], base_volume: i32, t_stop_loss_pct: f64, t_stop_profit: f64, liquidation_price:f64) -> Self {
         Self {
             base_position: 0,
             last_bar_time: 0,
             buy_times: 0,
-            entry_range: [4.1, 4.46],
-            base_volume: 2000,
-            stop_loss_pct: 0.02,
-            profit_threshold: 0.04,
+            entry_range,
+            base_volume,
+            t_stop_loss_pct,
+            t_stop_profit,
+            init_t_stop_profit:t_stop_profit,
+            liquidation_price
         }
     }
 
@@ -83,7 +94,7 @@ impl KStrategy {
     fn check_reentry(&mut self, bar: &KLine, code: &str, account: &mut Account) {
         let price = bar.close;
         if let Some(position) = account.positions.get(code) {
-            if price <= position.cost_price * (1.0 - self.stop_loss_pct) {
+            if price <= position.cost_price * (1.0 - self.t_stop_loss_pct) {
                 let buy_volume = position.volume * 2;
                 let order = Order {
                     code: code.to_string(),
@@ -109,8 +120,22 @@ impl KStrategy {
             Some(p) => (p.available_vol, p.cost_price),
             None => return,
         };
+        // 触发清仓
+        if price > self.liquidation_price {
+            // 需要重新获取可变引用进行卖出操作
+            let order = Order {
+                code: code.to_string(),
+                time: bar.time,
+                order_type: "S".parse().unwrap(),
+                price,
+                volume: sellable,
+            };
 
-        if price >= cost_price + self.profit_threshold {
+            if account.sell(&order) {
+                // 卖出成功后更新 base_position ???
+                self.t_stop_profit = self.init_t_stop_profit
+            }
+        } else if price >= cost_price + self.t_stop_profit + (0.02 * self.buy_times as f64) {
             if sellable > self.base_position {
                 let sell_volume = sellable - self.base_position - (self.buy_times * self.base_volume);
 
@@ -130,15 +155,20 @@ impl KStrategy {
                     }
                 }
             }
-        }
+        };
     }
 
     pub fn print_results(&self, transactions: &[Transaction], position: &Position, assets: &Assets) {
         println!("\n交易记录：");
         for t in transactions {
+            // 将时间戳转换为UTC时间
+            let utc_time = Utc.timestamp_opt(t.time, 0).single().unwrap();
+            // 手动调整为UTC+8时区（直接加8小时）
+            let utc8_time = utc_time + Duration::hours(8);
+            
             println!(
                 "{} - {:4} {}股 @ {:.2} 成交后成本{:.3}",
-                t.time, t.order_type, t.volume, t.price, t.cost_price
+                utc8_time.format("%Y-%m-%d"), t.order_type, t.volume, t.price, t.cost_price
             );
         }
 
