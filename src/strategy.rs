@@ -1,6 +1,6 @@
 use crate::account::Account;
 use crate::model::{Assets, KLine, Order, Position, Transaction};
-use chrono::{TimeZone, Utc, Duration, DateTime};
+use chrono::{TimeZone, Utc, Duration};
 
 /// 一个低位区间做T策略
 pub struct KStrategy {
