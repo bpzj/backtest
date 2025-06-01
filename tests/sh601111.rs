@@ -1,7 +1,8 @@
 use std::fs::File;
 use backtest::account::Account;
 use backtest::model::{Assets, KLine};
-use backtest::strategy::KStrategy;
+use backtest::strategy::k_strategy::KStrategy;
+
 
 #[test]
 fn 区间做t() {

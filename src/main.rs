@@ -1,6 +1,5 @@
 mod model;
 mod account;
-mod strategy;
 
 use serde_json;
 use std::error::Error;
