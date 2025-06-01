@@ -167,8 +167,8 @@ impl KStrategy {
             let utc8_time = utc_time + Duration::hours(8);
             
             println!(
-                "{} - {:4} {}股 @ {:.2} 成交后成本{:.3}",
-                utc8_time.format("%Y-%m-%d"), t.order_type, t.volume, t.price, t.cost_price
+                "{} - {:4} {}股 @ {:.2}  成交后{}股 成交后成本{:.3}",
+                utc8_time.format("%Y-%m-%d"), t.order_type, t.volume, t.price, t.remain_vol, t.remain_cost
             );
         }
 

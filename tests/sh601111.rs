@@ -1,17 +1,18 @@
-use std::fs::File;
 use backtest::account::Account;
 use backtest::model::{Assets, KLine};
 use backtest::strategy::k_strategy::KStrategy;
+use csv::Reader;
 
 
 #[test]
 fn 区间做t() {
     
     // 1. 读取 JSON 文件
-    let file = File::open(r"E:\OneDrive\1股票交易\11-回测\USHA601111-day2.json").unwrap();
+    // let file = File::open(r"E:\OneDrive\1股票交易\11-回测\USHA601111-day2.json").unwrap();
 
     // 2. 解析 JSON 数据
-    let mut bars: Vec<KLine> = serde_json::from_reader(file).unwrap();
+    // let mut bars: Vec<KLine> = serde_json::from_reader(file).unwrap();
+    let mut bars = Reader::from_path(r"A:\A\1day\USHA601111.csv").unwrap();
 
     // 3. 初始化账户
     let mut account = Account {
@@ -27,16 +28,18 @@ fn 区间做t() {
     let code = "600795".to_string();
 
     // 4. 创建策略
-    let mut strategy = KStrategy::new([5.9, 7.9],10000,0.02,0.1,11.0);
+    let mut strategy = KStrategy::new([5.9, 7.9],10000,0.02, 0.1, 9.0);
 
     // 5. 按时间排序
-    bars.sort_by_key(|k| k.time);
+    // bars.sort_by_key(|k| k.time);
 
     // 6. 处理每个 K 线
-    for bar in &bars {
-        strategy.process_bar(bar, &code, &mut account);
+    let iter = bars.deserialize();
+    // 6. 处理每个 K 线
+    for ite in iter {
+        let bar: KLine = ite.unwrap();
+        strategy.process_bar(&bar, &code, &mut account);
     }
-
     // 7. 打印结果
     let position = account.positions.get(&code).unwrap();
 

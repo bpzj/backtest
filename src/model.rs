@@ -79,8 +79,10 @@ pub struct Transaction {
     pub volume: i32,
     /// 交易类型（买入/卖出） B S
     pub order_type: char,
+    /// 成交后数量
+    pub remain_vol: i32,
     /// 成交后成本价
-    pub cost_price: f64,
+    pub remain_cost: f64,
 }
 
 /// 委托

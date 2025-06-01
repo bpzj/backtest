@@ -1,7 +1,6 @@
 mod model;
 mod account;
 
-use serde_json;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {

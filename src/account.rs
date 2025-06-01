@@ -51,7 +51,8 @@ impl Account {
             price: order.price,
             volume: order.volume,
             order_type: order.order_type.clone(),
-            cost_price: position.cost_price,
+            remain_vol: total_volume,
+            remain_cost: position.cost_price,
         });
 
         true
@@ -93,7 +94,8 @@ impl Account {
             price: order.price,
             volume: -order.volume, // 用负数表示卖出
             order_type: order.order_type.clone(),
-            cost_price: position.cost_price,
+            remain_vol: total_volume,
+            remain_cost: position.cost_price,
         });
 
         true
