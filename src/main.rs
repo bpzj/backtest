@@ -1,10 +1,8 @@
-mod model;
 mod account;
+mod model;
+mod strategy;
+mod ui;
 
-use std::error::Error;
-
-fn main() -> Result<(), Box<dyn Error>> {
-    // 1. 读取 JSON 文件
-
-    Ok(())
+fn main() -> Result<(), eframe::Error> {
+    ui::run_app()
 }
