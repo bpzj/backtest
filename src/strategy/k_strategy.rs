@@ -47,7 +47,25 @@ impl KStrategy {
     }
 
     pub fn process_bar(&mut self, bar: &KLine, code: &str, account: &mut Account) {
+        let volume = self.get_vol(bar, code, account);
 
+        if volume == 0 {
+            self.initial_entry(bar, code, account);
+        } else {
+            self.check_reentry(bar, code, account);
+            self.check_profit(bar, code, account);
+        }
+
+        // Update final values
+        // if let Some(position) = account.positions.get_mut(code) {
+        account.bar_upd_asset(bar, code);
+            
+        // }
+        self.last_bar_time = bar.time;
+    }
+
+    fn get_vol(&mut self, bar: &KLine, code: &str, account: &mut Account) -> i32 {
+        // Get position volume in a separate scope
         let position = account
             .positions
             .entry(code.to_string())
@@ -60,18 +78,11 @@ impl KStrategy {
                 current_price: 0.0,
             });
 
-        // 检查新交易日 ，按 时间间隔12小时，更新可卖数量
+        // Check new trading day, update available volume
         if bar.time - self.last_bar_time > 12 * 60 * 60 {
             position.available_vol = position.volume;
         }
-
-        if position.volume == 0 {
-            self.initial_entry(bar, code, account);
-        } else {
-            self.check_reentry(bar, code, account);
-            self.check_profit(bar, code, account);
-        }
-        self.last_bar_time = bar.time;
+        position.volume
     }
 
     fn initial_entry(&mut self, bar: &KLine, code: &str, account: &mut Account) {

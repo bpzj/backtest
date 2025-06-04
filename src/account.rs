@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::model::{Assets, Order, Position, Transaction};
+use crate::model::{Assets, KLine, Order, Position, Transaction};
 
 // 账户主体
 #[derive(Debug,Default)]
@@ -10,6 +10,7 @@ pub struct Account {
     pub transactions: Vec<Transaction>,
     pub orders: Vec<Order>,
 }
+
 
 impl Account {
     /// 买入操作
@@ -101,6 +102,14 @@ impl Account {
         true
     }
 
+    pub fn bar_upd_asset(&mut self, bar: &KLine, code: &str) {
+        if let Some(position) = self.positions.get_mut(&code.to_string()) {
+            position.current_price = bar.close;
+            self.assets.shi_zhi = position.current_price * position.volume as f64;
+            self.assets.balance = self.assets.available_balance + self.assets.shi_zhi + self.assets.freeze_balance;
+        }
+    }
+    
     /// 撤单操作（示例实现）
     pub fn cancel_order(&mut self) -> Option<Transaction> {
         // 实际实现需要订单ID管理和状态追踪

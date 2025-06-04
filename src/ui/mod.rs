@@ -24,11 +24,11 @@ impl Default for StrategyApp {
     fn default() -> Self {
         Self {
             strategy_params: StrategyParams {
-                entry_range: [10.0, 20.0],
-                base_volume: 100,
-                t_stop_loss_pct: 0.05,
+                entry_range: [5.9, 7.9],
+                base_volume: 10000,
+                t_stop_loss_pct: 0.02,
                 t_stop_profit: 0.1,
-                liquidation_price: 30.0,
+                liquidation_price: 8.5,
             },
             running: false,
             balance_points: Vec::new(),
@@ -68,13 +68,14 @@ impl eframe::App for StrategyApp {
                 ui.add(egui::DragValue::new(&mut self.strategy_params.liquidation_price).speed(0.1));
             });
 
-            ui.add_space(20.0);
+            ui.add_space(10.0);
 
             if ui.button(if self.running { "停止策略" } else { "运行策略" }).clicked() {
-                self.running = !self.running;
-                if self.running {
+                if !self.running {
+                    self.running = true;  // Set running state before execution
                     self.run_strategy();
-                }
+                    self.running = false;  // Reset state after completion
+                } 
             }
 
             // 显示资金曲线
@@ -110,9 +111,9 @@ impl StrategyApp {
             },
             ..Default::default()
         }; // 初始资金100万
-        let mut bars = Reader::from_path(r"A:\A\1day\USHA600795.csv").unwrap();
+        let mut bars = Reader::from_path(r"A:\A\1day\USHA601111.csv").unwrap();
         let code = "600795".to_string();
-
+        // let mut strategy = KStrategy::new([5.9, 7.9],10000,0.02, 0.1, 9.0);
         self.balance_points.clear();
         let mut time_index = 0.0_f64;
 
@@ -120,13 +121,10 @@ impl StrategyApp {
         for ite in iter {
             let bar: KLine = ite.unwrap();
             strategy.process_bar(&bar, &code, &mut account);
-            
+            // todo 计算的金额不对 
             self.balance_points.push([time_index, account.assets.balance]);
             time_index += 1.0;
         }
-
-        // 打印最终余额
-        println!("当前余额：{}", account.assets.balance);
     }
 }
 
