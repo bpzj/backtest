@@ -1,9 +1,9 @@
+use crate::account::Account;
+use crate::model::KLine;
+use crate::strategy::k_strategy::KStrategy;
 use csv::Reader;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use crate::model::{Assets, KLine};
-use crate::strategy::k_strategy::KStrategy;
-use crate::account::Account;
 use std::sync::Arc;
 
 pub struct StrategyApp {
@@ -102,13 +102,8 @@ impl StrategyApp {
         
         // TODO: 实现实际的策略运行逻辑
         let mut account = Account {
-            assets: Assets {
-                balance: 1_000_000.0,
-                freeze_balance: 0.0,
-                available_balance: 1_000_000.0,
-                shi_zhi: 0.0,
-                ying_kui: 0.0,
-            },
+            balance: 1_000_000.0,
+            available_balance: 1_000_000.0,
             ..Default::default()
         }; // 初始资金100万
         let mut bars = Reader::from_path(r"A:\A\1day\USHA601111.csv").unwrap();
@@ -122,9 +117,13 @@ impl StrategyApp {
             let bar: KLine = ite.unwrap();
             strategy.process_bar(&bar, &code, &mut account);
             // todo 计算的金额不对 
-            self.balance_points.push([time_index, account.assets.balance]);
+            self.balance_points.push([time_index, account.balance]);
             time_index += 1.0;
         }
+        // 7. 打印结果
+        let position = account.hold.get(&code).unwrap();
+
+        strategy.print_results(&account.transactions, position, &account);
     }
 }
 

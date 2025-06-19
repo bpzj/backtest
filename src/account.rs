@@ -5,37 +5,46 @@ use crate::model::{Assets, KLine, Order, Position, Transaction};
 #[derive(Debug,Default)]
 pub struct Account {
     pub name: String,
-    pub assets: Assets,
-    pub positions: HashMap<String, Position>,
+    /// 记录资金、盈亏
+    // pub assets: Assets,
+    /// 总资产
+    pub balance: f64,
+    /// 冻结金额
+    pub freeze_balance: f64,
+    /// 可用金额
+    pub available_balance: f64,
+    /// 总市值
+    pub shi_zhi: f64,          
+    /// 总盈亏
+    pub profit: f64,            
+    
+    /// 持仓
+    pub hold: HashMap<String, Position>,
+    /// 交割单
     pub transactions: Vec<Transaction>,
+    /// 订单记录
     pub orders: Vec<Order>,
+    
+    // 佣金费率 
+    // commission_ratio:f64,
+    // 税率
+    // tax_ratio:f64,
 }
 
 
 impl Account {
     /// 买入操作
     pub fn buy(&mut self, order: &Order) -> bool {
-        let position = self
-            .positions
-            .entry(order.code.clone())
-            .or_insert_with(|| Position {
-                code: "".to_string(),
-                name: "".to_string(),
-                volume: 0,
-                cost_price: 0.0,
-                available_vol: 0,
-                current_price: 0.0,
-            });
-
+        let position:&mut Position = self.hold.get_mut(&order.code).unwrap();
         let turnover = order.price * order.volume as f64;
 
         // 资金检查
-        if self.assets.available_balance < turnover {
+        if self.available_balance < turnover {
             return false;
         }
 
         // 更新资产
-        self.assets.available_balance -= turnover;
+        self.available_balance -= turnover;
 
         // 计算新成本价（考虑浮点精度）
         let total_cost = position.volume as f64 * position.cost_price + turnover;
@@ -61,7 +70,7 @@ impl Account {
 
     /// 卖出操作
     pub fn sell(&mut self, order: &Order) -> bool {
-        let position = match self.positions.get_mut(&order.code) {
+        let position = match self.hold.get_mut(&order.code) {
             Some(p) => p,
             None => return false, // 无持仓
         };
@@ -75,7 +84,7 @@ impl Account {
         let turnover = order.price * order.volume as f64;
 
         // 更新资产
-        self.assets.available_balance += turnover;
+        self.available_balance += turnover;
 
         // 计算新成本价（当完全卖出时重置为0）
         let total_volume = position.volume - order.volume;
@@ -102,11 +111,12 @@ impl Account {
         true
     }
 
-    pub fn bar_upd_asset(&mut self, bar: &KLine, code: &str) {
-        if let Some(position) = self.positions.get_mut(&code.to_string()) {
-            position.current_price = bar.close;
-            self.assets.shi_zhi = position.current_price * position.volume as f64;
-            self.assets.balance = self.assets.available_balance + self.assets.shi_zhi + self.assets.freeze_balance;
+    /// 行情变化时，更新持仓
+    pub fn on_price_change(&mut self, code: &str, price: f64) {
+        if let Some(position) = self.hold.get_mut(&code.to_string()) {
+            position.current_price = price;
+            self.shi_zhi = position.current_price * position.volume as f64;
+            self.balance = self.available_balance + self.shi_zhi + self.freeze_balance;
         }
     }
     

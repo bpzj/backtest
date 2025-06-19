@@ -16,19 +16,15 @@ fn 区间做t() {
 
     // 3. 初始化账户
     let mut account = Account {
-        assets: Assets {
-            balance: 1_000_000.0,
-            freeze_balance: 0.0,
-            available_balance: 1_000_000.0,
-            shi_zhi: 0.0,
-            ying_kui: 0.0,
-        },
+        balance: 1_000_000.0,
+        available_balance: 1_000_000.0,
         ..Default::default()
     };
     let code = "600795".to_string();
 
     // 4. 创建策略
-    let mut strategy = KStrategy::new([5.9, 7.9],10000,0.02, 0.1, 9.0);
+    // let mut strategy = KStrategy::new([5.9, 7.8],20000,0.05, 0.4, 11.0);
+    let mut strategy = KStrategy::new([5.9, 7.9],20000,0.05, 0.4, 11.0);
 
     // 5. 按时间排序
     // bars.sort_by_key(|k| k.time);
@@ -41,7 +37,7 @@ fn 区间做t() {
         strategy.process_bar(&bar, &code, &mut account);
     }
     // 7. 打印结果
-    let position = account.positions.get(&code).unwrap();
+    let position = account.hold.get(&code).unwrap();
 
-    strategy.print_results(&account.transactions, position, &account.assets);
+    strategy.print_results(&account.transactions, position, &account);
 }

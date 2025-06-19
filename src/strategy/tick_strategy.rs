@@ -81,6 +81,7 @@ impl TickStrategy {
 
     fn open_long(&mut self, tick: &TickData, code: &str, account: &mut Account) {
         let order = Order {
+            market_type: ' ',
             code: code.to_string(),
             time: tick.time,
             order_type: 'B',
@@ -97,6 +98,7 @@ impl TickStrategy {
 
     fn open_short(&mut self, tick: &TickData, code: &str, account: &mut Account) {
         let order = Order {
+            market_type: ' ',
             code: code.to_string(),
             time: tick.time,
             order_type: 'B',
@@ -135,6 +137,7 @@ impl TickStrategy {
 
     fn close_position(&mut self, tick: &TickData, code: &str, account: &mut Account) {
         let order = Order {
+            market_type: ' ',
             code: code.to_string(),
             time: tick.time,
             order_type: 'S',

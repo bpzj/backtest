@@ -6,13 +6,8 @@ use backtest::strategy::tick_strategy::TickStrategy;
 fn test_tick_strategy() {
     // 1. 初始化账户
     let mut account = Account {
-        assets: Assets {
-            balance: 1_000_000.0,
-            freeze_balance: 0.0,
-            available_balance: 1_000_000.0,
-            shi_zhi: 0.0,
-            ying_kui: 0.0,
-        },
+        balance: 1_000_000.0,
+        available_balance: 1_000_000.0,
         ..Default::default()
     };
     
@@ -61,7 +56,7 @@ fn test_tick_strategy() {
     strategy.process_tick(&tick, &code, &mut account);
     
     // 5. 获取结果
-    if let Some(position) = account.positions.get(&code) {
+    if let Some(position) = account.hold.get(&code) {
         println!("\n持仓信息：");
         println!("持仓数量：{}股", position.volume);
         println!("持仓成本：{:.3}", position.cost_price);
@@ -69,6 +64,6 @@ fn test_tick_strategy() {
     }
     
     println!("\n账户信息：");
-    println!("可用资金：{:.3}", account.assets.available_balance);
-    println!("总资产：{:.3}", account.assets.balance);
+    println!("可用资金：{:.3}", account.available_balance);
+    println!("总资产：{:.3}", account.balance);
 } 

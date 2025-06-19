@@ -11,7 +11,7 @@ pub struct KLine {
     pub volume: i32,   // 成交量
 }
 
-/// Tick数据结构
+/// Tick 数据结构
 #[derive(Debug, Clone, Deserialize)]
 pub struct TickData {
     pub time: i64,         // 时间戳
@@ -50,25 +50,28 @@ pub struct Assets {
     pub freeze_balance: f64,    // 冻结金额
     pub available_balance: f64, // 可用金额
     pub shi_zhi: f64,           // 总市值
-    pub ying_kui: f64,          // 总盈亏
+    pub profit: f64,            // 总盈亏
 }
 
 /// 持仓信息
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Position {
     pub code: String,
     pub name: String,
     /// 持仓数量
     pub volume: i32,
-    /// 可卖数量
+    /// 可用数量
     pub available_vol: i32,
     /// 当前价格
     pub current_price: f64,
     /// 成本价
     pub cost_price: f64,
+    /// 盈亏
+    pub profit: f64,
 }
 
-/// 交易记录
+
+/// 交割单
 #[derive(Debug)]
 pub struct Transaction {
     /// 成交时间
@@ -88,6 +91,8 @@ pub struct Transaction {
 /// 委托
 #[derive(Debug, Clone)]
 pub struct Order {
+    /// 市场
+    pub market_type: char,
     /// 股票代码
     pub code: String,
     /// 委托时间

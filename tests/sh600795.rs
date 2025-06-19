@@ -16,13 +16,8 @@ fn 区间做t() {
     
     // 3. 初始化账户
     let mut account = Account {
-        assets: Assets {
-            balance: 1_000_000.0,
-            freeze_balance: 0.0,
-            available_balance: 1_000_000.0,
-            shi_zhi: 0.0,
-            ying_kui: 0.0,
-        },
+        balance: 1_000_000.0,
+        available_balance: 1_000_000.0,
         ..Default::default()
     };
     let code = "600795".to_string();
@@ -41,7 +36,7 @@ fn 区间做t() {
     }
 
     // 7. 打印结果
-    let position = account.positions.get(&code).unwrap();
+    let position = account.hold.get(&code).unwrap();
 
-    strategy.print_results(&account.transactions, position, &account.assets);
+    strategy.print_results(&account.transactions, position, &account);
 }

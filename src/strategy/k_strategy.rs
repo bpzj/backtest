@@ -58,7 +58,7 @@ impl KStrategy {
 
         // Update final values
         // if let Some(position) = account.positions.get_mut(code) {
-        account.bar_upd_asset(bar, code);
+        account.on_price_change(code, bar.close);
             
         // }
         self.last_bar_time = bar.time;
@@ -67,7 +67,7 @@ impl KStrategy {
     fn get_vol(&mut self, bar: &KLine, code: &str, account: &mut Account) -> i32 {
         // Get position volume in a separate scope
         let position = account
-            .positions
+            .hold
             .entry(code.to_string())
             .or_insert(Position {
                 code: code.to_string(),
@@ -76,6 +76,7 @@ impl KStrategy {
                 cost_price: 0.0,
                 available_vol: 0,
                 current_price: 0.0,
+                profit: 0.0,    
             });
 
         // Check new trading day, update available volume
@@ -89,6 +90,7 @@ impl KStrategy {
         let price = bar.close;
         if (self.entry_range[0]..=self.entry_range[1]).contains(&price) {
             let order = Order {
+                market_type: ' ',
                 code: code.to_string(),
                 time: bar.time,
                 order_type: "B".parse().unwrap(),
@@ -104,10 +106,11 @@ impl KStrategy {
 
     fn check_reentry(&mut self, bar: &KLine, code: &str, account: &mut Account) {
         let price = bar.close;
-        if let Some(position) = account.positions.get(code) {
+        if let Some(position) = account.hold.get(code) {
             if price <= position.cost_price * (1.0 - self.t_stop_loss_pct) {
                 let buy_volume = position.volume * 2;
                 let order = Order {
+                    market_type: ' ',
                     code: code.to_string(),
                     time: bar.time,
                     order_type: "B".parse().unwrap(),
@@ -127,7 +130,7 @@ impl KStrategy {
     fn check_profit(&mut self, bar: &KLine, code: &str, account: &mut Account) {
         let price = bar.close;
         // 先获取持仓数据（不持有引用）
-        let (sellable, cost_price) = match account.positions.get(code) {
+        let (sellable, cost_price) = match account.hold.get(code) {
             Some(p) => (p.available_vol, p.cost_price),
             None => return,
         };
@@ -135,6 +138,7 @@ impl KStrategy {
         if price > self.liquidation_price {
             // 需要重新获取可变引用进行卖出操作
             let order = Order {
+                market_type: ' ',
                 code: code.to_string(),
                 time: bar.time,
                 order_type: "S".parse().unwrap(),
@@ -152,6 +156,7 @@ impl KStrategy {
 
                 // 需要重新获取可变引用进行卖出操作
                 let order = Order {
+                    market_type: ' ',
                     code: code.to_string(),
                     time: bar.time,
                     order_type: "S".parse().unwrap(),
@@ -161,7 +166,7 @@ impl KStrategy {
 
                 if account.sell(&order) {
                     // 卖出成功后更新 base_position
-                    if let Some(position) = account.positions.get(code) {
+                    if let Some(position) = account.hold.get(code) {
                         self.base_position = position.volume;
                     }
                 }
@@ -169,7 +174,7 @@ impl KStrategy {
         };
     }
 
-    pub fn print_results(&self, transactions: &[Transaction], position: &Position, assets: &Assets) {
+    pub fn print_results(&self, transactions: &[Transaction], position: &Position, account: &Account) {
         println!("\n交易记录：");
         for t in transactions {
             // 将时间戳转换为UTC时间
@@ -185,11 +190,8 @@ impl KStrategy {
 
         println!("\n最终持仓：{}股", position.volume);
         println!("持仓成本：{:.3}", position.cost_price);
-        println!("剩余现金：{:.3}", assets.available_balance);
-        println!(
-            "总资产：{:.3}",
-            assets.available_balance + position.volume as f64 * position.cost_price
-        );
+        println!("剩余现金：{:.3}", account.available_balance);
+        println!("总资产：{:.3}", account.balance);
     }
 }
 
