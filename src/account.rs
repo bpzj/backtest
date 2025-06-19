@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use crate::model::{Assets, KLine, Order, Position, Transaction};
+use std::collections::hash_map::Entry;
+use crate::model::{KLine, Order, Position, Transaction};
 
 // 账户主体
 #[derive(Debug,Default)]
@@ -14,7 +15,7 @@ pub struct Account {
     /// 可用金额
     pub available_balance: f64,
     /// 总市值
-    pub shi_zhi: f64,          
+    pub shi_zhi: f64,
     /// 总盈亏
     pub profit: f64,            
     
@@ -35,25 +36,35 @@ pub struct Account {
 impl Account {
     /// 买入操作
     pub fn buy(&mut self, order: &Order) -> bool {
-        let position:&mut Position = self.hold.get_mut(&order.code).unwrap();
         let turnover = order.price * order.volume as f64;
-
         // 资金检查
         if self.available_balance < turnover {
             return false;
         }
-
         // 更新资产
         self.available_balance -= turnover;
-
+        
+        // let position:&mut Position = self.get_position(&order.code);
         // 计算新成本价（考虑浮点精度）
-        let total_cost = position.volume as f64 * position.cost_price + turnover;
-        let total_volume = position.volume + order.volume;
-        position.cost_price =   total_cost / total_volume as f64;
-
+        // let total_cost = position.volume as f64 * position.cost_price + turnover;
+        // let total_volume = position.volume + order.volume;
+        // position.cost_price =   total_cost / total_volume as f64;
         // 更新持仓
-        position.volume = total_volume;
+        // position.volume = total_volume;
         // position.available_vol += order.volume; // T+1 市场需移除这行
+        
+        
+        // 先处理position，提取需要的数据
+        let (total_volume, cost_price) = {
+            let position = self.get_position(&order.code);
+            let total_cost = position.volume as f64 * position.cost_price + turnover;
+            let total_volume = position.volume + order.volume;
+            // 计算新成本价（考虑浮点精度）
+            position.cost_price = total_cost / total_volume as f64;
+            // 更新持仓
+            position.volume = total_volume;
+            (total_volume, position.cost_price)
+        };
 
         // 记录交易
         self.transactions.push(Transaction {
@@ -62,7 +73,7 @@ impl Account {
             volume: order.volume,
             order_type: order.order_type.clone(),
             remain_vol: total_volume,
-            remain_cost: position.cost_price,
+            remain_cost: cost_price,
         });
 
         true
@@ -124,5 +135,17 @@ impl Account {
     pub fn cancel_order(&mut self) -> Option<Transaction> {
         // 实际实现需要订单ID管理和状态追踪
         None
+    }
+
+    /// 获取持仓信息
+    pub fn get_position(&mut self, code: &str) -> &mut Position {
+        match self.hold.entry(code.to_string()) {
+            Entry::Occupied(e) => e.into_mut(),
+            Entry::Vacant(e) => e.insert(Position {
+                code: code.to_string(),
+                name: "".to_string(),
+                ..Default::default()
+            }),
+        }
     }
 }

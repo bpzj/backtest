@@ -1,5 +1,5 @@
 use backtest::account::Account;
-use backtest::model::{Assets, KLine};
+use backtest::model::{KLine};
 use backtest::strategy::k_strategy::KStrategy;
 use csv::Reader;
 

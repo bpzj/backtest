@@ -1,5 +1,5 @@
 use crate::account::Account;
-use crate::model::{Assets, KLine, Order, Position, Transaction};
+use crate::model::{KLine, Order, Position, Transaction};
 use chrono::{TimeZone, Utc, Duration};
 
 /// 一个低位区间做T策略
@@ -66,19 +66,7 @@ impl KStrategy {
 
     fn get_vol(&mut self, bar: &KLine, code: &str, account: &mut Account) -> i32 {
         // Get position volume in a separate scope
-        let position = account
-            .hold
-            .entry(code.to_string())
-            .or_insert(Position {
-                code: code.to_string(),
-                name: "".to_string(),
-                volume: 0,
-                cost_price: 0.0,
-                available_vol: 0,
-                current_price: 0.0,
-                profit: 0.0,    
-            });
-
+        let position = account.get_position(code);
         // Check new trading day, update available volume
         if bar.time - self.last_bar_time > 12 * 60 * 60 {
             position.available_vol = position.volume;

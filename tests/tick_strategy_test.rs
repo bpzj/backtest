@@ -1,5 +1,5 @@
 use backtest::account::Account;
-use backtest::model::{Assets, TickData};
+use backtest::model::{TickData};
 use backtest::strategy::tick_strategy::TickStrategy;
 
 #[test]

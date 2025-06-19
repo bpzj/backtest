@@ -43,15 +43,6 @@ pub struct TickData {
     pub ask5_volume: i32,
 }
 
-/// 资产信息
-#[derive(Debug,Default)]
-pub struct Assets {
-    pub balance: f64,           // 总资产
-    pub freeze_balance: f64,    // 冻结金额
-    pub available_balance: f64, // 可用金额
-    pub shi_zhi: f64,           // 总市值
-    pub profit: f64,            // 总盈亏
-}
 
 /// 持仓信息
 #[derive(Debug, Default)]

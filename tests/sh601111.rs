@@ -1,5 +1,5 @@
 use backtest::account::Account;
-use backtest::model::{Assets, KLine};
+use backtest::model::{ KLine};
 use backtest::strategy::k_strategy::KStrategy;
 use csv::Reader;
 
@@ -24,7 +24,7 @@ fn 区间做t() {
 
     // 4. 创建策略
     // let mut strategy = KStrategy::new([5.9, 7.8],20000,0.05, 0.4, 11.0);
-    let mut strategy = KStrategy::new([5.9, 7.9],20000,0.05, 0.4, 11.0);
+    let mut strategy = KStrategy::new([5.9, 7.8],20000,0.05, 0.4, 11.0);
 
     // 5. 按时间排序
     // bars.sort_by_key(|k| k.time);
