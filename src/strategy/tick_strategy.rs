@@ -1,5 +1,5 @@
-use crate::account::Account;
-use crate::model::{Order, TickData};
+use crate::account::{Account, Order};
+use crate::model::{TickData};
 
 /// Tick级别策略 - 基于盘口信息的简单策略
 pub struct TickStrategy {

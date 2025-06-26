@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
-use crate::model::{KLine, Order, Position, Transaction};
+use crate::model::{KLine};
 
 // 账户主体
 #[derive(Debug,Default)]
@@ -148,4 +148,58 @@ impl Account {
             }),
         }
     }
+}
+
+
+
+/// 持仓信息
+#[derive(Debug, Default)]
+pub struct Position {
+    pub code: String,
+    pub name: String,
+    /// 持仓数量
+    pub volume: i32,
+    /// 可用数量
+    pub available_vol: i32,
+    /// 当前价格
+    pub current_price: f64,
+    /// 成本价
+    pub cost_price: f64,
+    /// 盈亏
+    pub profit: f64,
+}
+
+
+/// 交割单
+#[derive(Debug)]
+pub struct Transaction {
+    /// 成交时间
+    pub time: i64,
+    /// 成交价格
+    pub price: f64,
+    /// 成交数量
+    pub volume: i32,
+    /// 交易类型（买入/卖出） B S
+    pub order_type: char,
+    /// 成交后数量
+    pub remain_vol: i32,
+    /// 成交后成本价
+    pub remain_cost: f64,
+}
+
+/// 委托
+#[derive(Debug, Clone)]
+pub struct Order {
+    /// 市场
+    pub market_type: char,
+    /// 股票代码
+    pub code: String,
+    /// 委托时间
+    pub time: i64,
+    /// 委托价格
+    pub price: f64,
+    /// 委托数量
+    pub volume: i32,
+    /// 委托类型 B S
+    pub order_type: char,
 }
