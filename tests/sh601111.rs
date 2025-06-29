@@ -1,4 +1,4 @@
-use backtest::account::Account;
+use backtest::account::{Account, StockCode};
 use backtest::model::{ KLine};
 use backtest::strategy::k_strategy::KStrategy;
 use csv::Reader;
@@ -20,7 +20,7 @@ fn 区间做t() {
         available_balance: 1_000_000.0,
         ..Default::default()
     };
-    let code = "600795".to_string();
+    let code = "600795";
 
     // 4. 创建策略
     // let mut strategy = KStrategy::new([5.9, 7.8],20000,0.05, 0.4, 11.0);
@@ -37,7 +37,7 @@ fn 区间做t() {
         strategy.process_bar(&bar, &code, &mut account);
     }
     // 7. 打印结果
-    let position = account.hold.get(&code).unwrap();
+    let position = account.hold.get(&StockCode::from(code)).unwrap();
 
     strategy.print_results(&account.transactions, position, &account);
 }

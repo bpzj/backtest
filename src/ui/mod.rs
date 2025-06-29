@@ -5,6 +5,7 @@ use csv::Reader;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use std::sync::Arc;
+use crate::account::StockCode;
 
 pub struct StrategyApp {
     strategy_params: StrategyParams,
@@ -107,7 +108,7 @@ impl StrategyApp {
             ..Default::default()
         }; // 初始资金100万
         let mut bars = Reader::from_path(r"A:\A\1day\USHA601111.csv").unwrap();
-        let code = "600795".to_string();
+        let code = "600795";
         // let mut strategy = KStrategy::new([5.9, 7.9],10000,0.02, 0.1, 9.0);
         self.balance_points.clear();
         let mut time_index = 0.0_f64;
@@ -121,7 +122,7 @@ impl StrategyApp {
             time_index += 1.0;
         }
         // 7. 打印结果
-        let position = account.hold.get(&code).unwrap();
+        let position = account.hold.get(&StockCode::from(code)).unwrap();
 
         strategy.print_results(&account.transactions, position, &account);
     }

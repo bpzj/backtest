@@ -2,25 +2,29 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use crate::model::{KLine};
 
+
+
+
 // 账户主体
 #[derive(Debug,Default)]
 pub struct Account {
     pub name: String,
-    /// 记录资金、盈亏
+    // 记录资金、盈亏
     // pub assets: Assets,
-    /// 总资产
+    /// 总资产 = 总市值 + 可用金额 + 冻结金额
     pub balance: f64,
-    /// 冻结金额
+    /// 冻结金额 （未成交的委托占用）
     pub freeze_balance: f64,
     /// 可用金额
     pub available_balance: f64,
+
     /// 总市值
-    pub shi_zhi: f64,
+    pub portfolio_value: f64,
     /// 总盈亏
-    pub profit: f64,            
-    
+    pub profit: f64,
     /// 持仓
-    pub hold: HashMap<String, Position>,
+    pub hold: HashMap<StockCode, Position>,
+
     /// 交割单
     pub transactions: Vec<Transaction>,
     /// 订单记录
@@ -56,7 +60,7 @@ impl Account {
         
         // 先处理position，提取需要的数据
         let (total_volume, cost_price) = {
-            let position = self.get_position(&order.code);
+            let position = self.get_position(order.code.clone());
             let total_cost = position.volume as f64 * position.cost_price + turnover;
             let total_volume = position.volume + order.volume;
             // 计算新成本价（考虑浮点精度）
@@ -124,10 +128,11 @@ impl Account {
 
     /// 行情变化时，更新持仓
     pub fn on_price_change(&mut self, code: &str, price: f64) {
-        if let Some(position) = self.hold.get_mut(&code.to_string()) {
+        
+        if let Some(position) = self.hold.get_mut(&StockCode::from(code)) {
             position.current_price = price;
-            self.shi_zhi = position.current_price * position.volume as f64;
-            self.balance = self.available_balance + self.shi_zhi + self.freeze_balance;
+            self.portfolio_value = position.current_price * position.volume as f64;
+            self.balance = self.available_balance + self.portfolio_value + self.freeze_balance;
         }
     }
     
@@ -138,11 +143,11 @@ impl Account {
     }
 
     /// 获取持仓信息
-    pub fn get_position(&mut self, code: &str) -> &mut Position {
-        match self.hold.entry(code.to_string()) {
+    pub fn get_position(&mut self, code: StockCode) -> &mut Position {
+        match self.hold.entry(code.clone()) {
             Entry::Occupied(e) => e.into_mut(),
             Entry::Vacant(e) => e.insert(Position {
-                code: code.to_string(),
+                code: code,
                 name: "".to_string(),
                 ..Default::default()
             }),
@@ -155,7 +160,7 @@ impl Account {
 /// 持仓信息
 #[derive(Debug, Default)]
 pub struct Position {
-    pub code: String,
+    pub code: StockCode,
     pub name: String,
     /// 持仓数量
     pub volume: i32,
@@ -193,7 +198,7 @@ pub struct Order {
     /// 市场
     pub market_type: char,
     /// 股票代码
-    pub code: String,
+    pub code: StockCode,
     /// 委托时间
     pub time: i64,
     /// 委托价格
@@ -202,4 +207,15 @@ pub struct Order {
     pub volume: i32,
     /// 委托类型 B S
     pub order_type: char,
+}
+
+#[derive(Debug,Default,Eq,PartialEq,Ord,PartialOrd,Hash,Clone)]
+pub struct StockCode([u8; 9]);
+
+impl From<&str> for StockCode {
+    fn from(value: &str) -> Self {
+        let mut bytes = [0u8; 9];
+        bytes.copy_from_slice(value.as_bytes());
+        StockCode(bytes)
+    }
 }
