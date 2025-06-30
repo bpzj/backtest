@@ -17,11 +17,3 @@ parquet = "55.2.0"
 [dev-dependencies]
 plotters = "0.3.7"
 polars = { version = "0.49.1"}
-
-[[example]]
-name = "basic_usage"
-path = "examples/basic_usage.rs"
-
-[[example]]
-name = "tick_3s"
-path = "examples/tick_3s.rs"
