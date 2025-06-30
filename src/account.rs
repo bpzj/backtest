@@ -124,9 +124,8 @@ impl Account {
         true
     }
 
-    /// 行情变化时，更新持仓
+    /// 行情变化时，更新持仓市值 todo 
     pub fn on_price_change(&mut self, code: &str, price: f64) {
-        
         if let Some(position) = self.hold.get_mut(&StockCode::from(code)) {
             position.current_price = price;
             self.portfolio_value = position.current_price * position.volume as f64;
@@ -158,7 +157,9 @@ impl Account {
 /// 持仓信息
 #[derive(Debug, Default)]
 pub struct Position {
+    /// 股票代码
     pub code: StockCode,
+    /// 股票名称
     pub name: String,
     /// 持仓数量
     pub volume: i32,
