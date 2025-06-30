@@ -96,7 +96,7 @@ impl Account {
         let turnover = order.price * order.volume as f64;
 
         // 更新资产
-        self.available_balance += turnover;
+        self.available_balance = self.available_balance + turnover;
 
         // 计算新成本价（当完全卖出时重置为0）
         let total_volume = position.volume - order.volume;
