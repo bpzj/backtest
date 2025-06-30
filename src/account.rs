@@ -44,7 +44,7 @@ impl Account {
             return false;
         }
         // 更新资产
-        self.available_balance -= turnover;
+        self.available_balance = self.available_balance - turnover;
         
         // let position:&mut Position = self.get_position(&order.code);
         // 计算新成本价（考虑浮点精度）
@@ -54,18 +54,17 @@ impl Account {
         // 更新持仓
         // position.volume = total_volume;
         // position.available_vol += order.volume; // T+1 市场需移除这行
-        
-        
+                
         // 先处理position，提取需要的数据
         let (total_volume, cost_price) = {
             let position = self.get_position(order.code.clone());
+            // 买入成交后，花费总资金
             let total_cost = position.volume as f64 * position.cost_price + turnover;
-            let total_volume = position.volume + order.volume;
+            // 更新持仓，买入成交后，持仓数量
+            position.volume = position.volume + order.volume;                        
             // 计算新成本价（考虑浮点精度）
-            position.cost_price = total_cost / total_volume as f64;
-            // 更新持仓
-            position.volume = total_volume;
-            (total_volume, position.cost_price)
+            position.cost_price = total_cost / position.volume as f64;
+            (position.volume, position.cost_price)
         };
 
         // 记录交易
@@ -109,7 +108,7 @@ impl Account {
 
         // 更新持仓
         position.volume = total_volume;
-        position.available_vol -= order.volume;
+        position.available_vol = position.available_vol - order.volume;
 
         // 记录交易
         self.transactions.push(Transaction {
