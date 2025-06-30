@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
-use crate::model::{KLine};
-
 
 
 
@@ -210,12 +208,13 @@ pub struct Order {
 }
 
 #[derive(Debug,Default,Eq,PartialEq,Ord,PartialOrd,Hash,Clone)]
-pub struct StockCode([u8; 9]);
+pub struct StockCode([u8; 8]);
 
 impl From<&str> for StockCode {
     fn from(value: &str) -> Self {
-        let mut bytes = [0u8; 9];
-        bytes.copy_from_slice(value.as_bytes());
+        let mut bytes = [0u8; 8];
+        let len = value.len();
+        bytes[..len].copy_from_slice(value.as_bytes());
         StockCode(bytes)
     }
 }

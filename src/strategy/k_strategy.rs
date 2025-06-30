@@ -78,7 +78,7 @@ impl KStrategy {
         let price = bar.close;
         if (self.entry_range[0]..=self.entry_range[1]).contains(&price) {
             let order = Order {
-                market_type: ' ',
+                market_type: "0".parse().unwrap(),
                 code: StockCode::from(code),
                 time: bar.time,
                 order_type: "B".parse().unwrap(),
