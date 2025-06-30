@@ -8,7 +8,8 @@ pub struct KLine {
     pub high: f64,     // 最高价
     pub low: f64,      // 最低价
     pub close: f64,    // 收盘价
-    pub volume: i32,   // 成交量
+    /// 成交量, i32 会溢出
+    pub volume: i64,
 }
 
 /// Tick 数据结构

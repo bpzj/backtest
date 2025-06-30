@@ -2,6 +2,7 @@ use backtest::account::{Account, StockCode};
 use backtest::model::{KLine};
 use backtest::strategy::k_strategy::KStrategy;
 use csv::Reader;
+use egui::debug_text::print;
 
 #[test]
 fn 区间做t() {
