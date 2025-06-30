@@ -143,7 +143,7 @@ impl Account {
         match self.hold.entry(code.clone()) {
             Entry::Occupied(e) => e.into_mut(),
             Entry::Vacant(e) => e.insert(Position {
-                code: code,
+                code,
                 name: "".to_string(),
                 ..Default::default()
             }),
