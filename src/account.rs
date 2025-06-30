@@ -126,8 +126,10 @@ impl Account {
     /// 行情变化时，更新持仓市值 todo 
     pub fn on_price_change(&mut self, code: &str, price: f64) {
         if let Some(position) = self.hold.get_mut(&StockCode::from(code)) {
+            let after_value = price * position.volume  as f64;
+            self.portfolio_value = self.portfolio_value + after_value - position.market_value;
             position.current_price = price;
-            self.portfolio_value = position.current_price * position.volume as f64;
+            position.market_value = after_value;
             self.balance = self.available_balance + self.portfolio_value + self.freeze_balance;
         }
     }
@@ -170,6 +172,8 @@ pub struct Position {
     pub cost_price: f64,
     /// 盈亏
     pub profit: f64,
+    /// 市值
+    pub market_value: f64,
 }
 
 
