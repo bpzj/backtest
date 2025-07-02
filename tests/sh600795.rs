@@ -12,7 +12,7 @@ fn mading() {
 
     // 2. 解析 JSON 数据
     // let mut bars: Vec<KLine> = serde_json::from_reader(file).unwrap();
-    let mut bars = Reader::from_path(r"A:\A\1day\USHA600795.csv").unwrap();
+    let mut bars = Reader::from_path(r"A:\day\USHA600795.csv").unwrap();
 
     // 3. 初始化账户
     let mut account = Account {

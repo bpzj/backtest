@@ -107,7 +107,7 @@ impl StrategyApp {
             available_balance: 1_000_000.0,
             ..Default::default()
         }; // 初始资金100万
-        let mut bars = Reader::from_path(r"A:\A\1day\USHA601111.csv").unwrap();
+        let mut bars = Reader::from_path(r"A:\data\day\USHA601111.csv").unwrap();
         let code = "600795";
         // let mut strategy = KStrategy::new([5.9, 7.9],10000,0.02, 0.1, 9.0);
         self.balance_points.clear();

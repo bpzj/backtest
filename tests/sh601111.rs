@@ -12,7 +12,7 @@ fn 区间做t() {
 
     // 2. 解析 JSON 数据
     // let mut bars: Vec<KLine> = serde_json::from_reader(file).unwrap();
-    let mut bars = Reader::from_path(r"A:\A\1day\USHA601111.csv").unwrap();
+    let mut bars = Reader::from_path(r"A:\data\day\USHA601111.csv").unwrap();
 
     // 3. 初始化账户
     let mut account = Account {
@@ -25,6 +25,7 @@ fn 区间做t() {
     // 4. 创建策略
     // let mut strategy = KStrategy::new([5.9, 7.8],20000,0.05, 0.4, 11.0);
     let mut strategy = KStrategy::new([5.9, 7.8],20000,0.05, 0.4, 11.0);
+    let mut strategy = KStrategy::new([5.9, 7.8],50000,0.1, 0.4, 11.0);
 
     // 5. 按时间排序
     // bars.sort_by_key(|k| k.time);

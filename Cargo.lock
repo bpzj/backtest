@@ -624,8 +624,6 @@ dependencies = [
  "parquet",
  "polars",
  "serde",
- "serde_json",
- "winapi",
 ]
 
 [[package]]
