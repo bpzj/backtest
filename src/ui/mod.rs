@@ -94,7 +94,8 @@ impl eframe::App for StrategyApp {
 impl StrategyApp {
     fn run_strategy(&mut self) {
         let mut strategy = KStrategy::new(
-            self.strategy_params.entry_range,
+            self.strategy_params.entry_range[0],
+            self.strategy_params.entry_range[1],
             self.strategy_params.base_volume,
             self.strategy_params.t_stop_loss_pct,
             self.strategy_params.t_stop_profit,

@@ -3,46 +3,65 @@ use crate::model::{KLine};
 use chrono::{TimeZone, Utc, Duration};
 
 /// 一个低位区间做T策略
+#[derive(Debug, Default)]
 pub struct KStrategy {
-    // 初始持仓
-    base_position: i32,
+
+    /// 初始建仓类型  0:数量 1:比例
+    init_position_type: u8,
+    /// 初始建仓数量
+    init_position_volume: i32,
+    /// 初始建仓比例
+    init_position_proportion:i32,
     
     // 策略参数
+    /// 买入价格区间 最低
+    buy_price_low: f64,
+    /// 买入价格区间 最高
+    buy_price_high: f64,
+    /// 初始底仓数量
+    init_base_volume: i32,
+    /// 买入次数影响底仓
+    buy_effect_base_volume: u8,
     /// 买入次数，根据买入次数影响底仓
     buy_times: i32,
-    /// 底仓
-    base_volume: i32,
-    /// 低价做 T 的价格区间
-    entry_range: [f64; 2],
+    ///
+    add_volume_every_buy: i32,
+    /// 动态底仓数量
+    dynamic_base_volume: i32,
     
-    /// 回调买入百分比
-    t_stop_loss_pct: f64,
+    
+    /// 回调补仓百分比
+    add_pos_drawdown_pct: f64,
     /// 初始时，做T区间 止盈 stop_profit
-    init_t_stop_profit:f64,
-    /// 做T区间 止盈 stop_profit
-    t_stop_profit: f64,
+    init_stop_profit:f64,
+    /// 动态止盈 stop_profit
+    dynamic_stop_profit: f64,
     
     /// 清仓价格，达到清仓价格时清仓
     liquidation_price: f64,
     /// 清仓百分比，达到清仓百分比时清仓
     
+
     /// 上一个 k线时间
     last_bar_time: i64,
     
 }
 
 impl KStrategy {
-    pub fn new(entry_range: [f64; 2], base_volume: i32, t_stop_loss_pct: f64, t_stop_profit: f64, liquidation_price:f64) -> Self {
+    pub fn new(buy_price_low: f64, buy_price_high:f64, init_base_volume: i32, add_pos_drawdown_pct: f64, init_stop_profit: f64, liquidation_price:f64) -> Self {
         Self {
-            base_position: 0,
+            init_position_volume: init_base_volume,
             last_bar_time: 0,
             buy_times: 0,
-            entry_range,
-            base_volume,
-            t_stop_loss_pct,
-            t_stop_profit,
-            init_t_stop_profit:t_stop_profit,
-            liquidation_price
+            buy_price_low,
+            buy_price_high,
+            init_base_volume,
+            add_pos_drawdown_pct,
+            dynamic_stop_profit: init_stop_profit,
+            add_volume_every_buy: init_base_volume,
+            init_stop_profit,
+            liquidation_price,
+            ..Default::default()
         }
     }
 
@@ -74,20 +93,22 @@ impl KStrategy {
         position.volume
     }
 
+
+    /// 初始化建仓
     fn initial_entry(&mut self, bar: &KLine, code: &str, account: &mut Account) {
         let price = bar.close;
-        if (self.entry_range[0]..=self.entry_range[1]).contains(&price) {
+        if (self.buy_price_low..=self.buy_price_high).contains(&price) {
             let order = Order {
                 market_type: "0".parse().unwrap(),
                 code: StockCode::from(code),
                 time: bar.time,
                 order_type: "B".parse().unwrap(),
                 price,
-                volume: self.base_volume,
+                volume: self.init_position_volume,
             };
 
             if account.buy(&order) {
-                self.base_position = self.base_volume;
+                self.dynamic_base_volume = self.init_base_volume;
             }
         }
     }
@@ -95,7 +116,7 @@ impl KStrategy {
     fn check_reentry(&mut self, bar: &KLine, code: &str, account: &mut Account) {
         let price = bar.close;
         if let Some(position) = account.hold.get(&StockCode::from(code)) {
-            if price <= position.cost_price * (1.0 - self.t_stop_loss_pct) {
+            if price <= position.cost_price * (1.0 - self.add_pos_drawdown_pct) {
                 let buy_volume = position.volume * 2;
                 let order = Order {
                     market_type: ' ',
@@ -135,12 +156,14 @@ impl KStrategy {
             };
 
             if account.sell(&order) {
-                // 卖出成功后更新 base_position ???
-                self.t_stop_profit = self.init_t_stop_profit
+                // todo 清仓成功后 更新 base_position ???
+                self.dynamic_stop_profit = self.init_stop_profit;
+                // self.dynamic_base_volume = self.init_base_volume;
+                // self.buy_times = 0;
             }
-        } else if price >= cost_price + self.t_stop_profit + (0.02 * self.buy_times as f64) {
-            if sellable > self.base_position {
-                let sell_volume = sellable - self.base_position - (self.buy_times * self.base_volume);
+        } else if price >= cost_price + self.dynamic_stop_profit + (0.02 * self.buy_times as f64) {
+            if sellable > self.dynamic_base_volume {
+                let sell_volume = sellable - self.dynamic_base_volume - (self.buy_times * self.add_volume_every_buy);
 
                 // 需要重新获取可变引用进行卖出操作
                 let order = Order {
@@ -153,9 +176,8 @@ impl KStrategy {
                 };
 
                 if account.sell(&order) {
-                    // 卖出成功后更新 base_position
                     if let Some(position) = account.hold.get(&StockCode::from(code)) {
-                        self.base_position = position.volume;
+                        // 
                     }
                 }
             }

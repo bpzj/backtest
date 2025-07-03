@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 mod account;
 mod model;
 mod strategy;

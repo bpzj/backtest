@@ -23,7 +23,7 @@ fn mading() {
     let code = "600795";
 
     // 4. 创建策略
-    let mut strategy = KStrategy::new([4.1, 4.46],2000,0.02,0.04,6.0);
+    let mut strategy = KStrategy::new(4.1, 4.46,2000,0.02,0.04,6.0);
 
     // 5. 按时间排序
     // bars.sort_by_key(|k| k.time);
