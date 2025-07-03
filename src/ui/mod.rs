@@ -25,8 +25,8 @@ impl Default for StrategyApp {
     fn default() -> Self {
         Self {
             strategy_params: StrategyParams {
-                entry_range: [5.9, 7.9],
-                base_volume: 10000,
+                entry_range: [5.9, 7.8],
+                base_volume: 20000,
                 t_stop_loss_pct: 0.02,
                 t_stop_profit: 0.1,
                 liquidation_price: 8.5,

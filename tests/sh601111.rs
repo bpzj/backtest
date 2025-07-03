@@ -23,10 +23,9 @@ fn 区间做t() {
     let code = "600795";
 
     // 4. 创建策略
-    // let mut strategy = KStrategy::new([5.9, 7.8],20000,0.05, 0.4, 11.0);
     // let mut strategy = KStrategy::new(5.9, 7.8,20000,0.05, 0.4, 11.0);
-    let mut strategy = KStrategy::new(5.9, 7.8,50000,0.1, 0.4, 11.0);
-    let mut strategy = KStrategy::new(5.9, 7.8,50000,0.1, 0.4, 11.0);
+    // let mut strategy = KStrategy::new(5.9, 7.8,50000,0.1, 0.4, 11.0);
+    let mut strategy = KStrategy::new(5.9, 7.8,130000,0.1, 0.5, 11.0);
 
     // 5. 按时间排序
     // bars.sort_by_key(|k| k.time);
